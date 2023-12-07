@@ -1,0 +1,23 @@
+version: '3'
+services:
+  database:
+    image: 'postgres' # use latest official postgres version
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: qlcty
+    ports:
+      - 5432:5432
+  # db:
+  #   image: mysql:8.0
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: admin
+  #     MYSQL_DATABASE: qlcty
+  #     MYSQL_USER: qlcty
+  #     MYSQL_PASSWORD: qlcty12345
+  #   ports:
+  #     - "3306:3306"
+volumes:
+  database-data:
