@@ -21,6 +21,10 @@ type Config struct {
 
 	AccessTokenKey       string        `mapstructure:"TOKEN_KEY"`
 	AccessTokenExpiresIn time.Duration `mapstructure:"ACCESS_TOKEN_EXPIRED_IN"`
+
+	KafkaBroker1 string `mapstructure:"KAFKA_PRODUCER_BROKER_1"`
+	KafkaBroker2 string `mapstructure:"KAFKA_PRODUCER_BROKER_2"`
+	KafkaBroker3 string `mapstructure:"KAFKA_PRODUCER_BROKER_3"`
 }
 
 var lock = &sync.Mutex{}
