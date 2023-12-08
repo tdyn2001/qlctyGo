@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"v2/controllers"
 	"v2/initializers"
-	"v2/kafkas"
 	"v2/middleware"
 	"v2/services"
 	"v2/wss"
@@ -37,8 +35,6 @@ func main() {
 	corsConfig.AllowOrigins = []string{"http://localhost:8000", initializers.GetConfig().ClientOrigin}
 	corsConfig.AllowCredentials = true
 
-	initKafka()
-
 	server.Use(cors.New(corsConfig))
 
 	server.GET("/ws", middleware.AuthorizeJWT(), wsServer.SetupWSS)
@@ -51,9 +47,4 @@ func main() {
 
 	authController.AuthController(router)
 	log.Fatal(server.Run(":" + initializers.GetConfig().ServerPort))
-}
-
-func initKafka() {
-	go kafkas.Produce(context.Background(), "test-topic-1")
-	go kafkas.Consume(context.Background(), "test-topic-1", "test-group")
 }

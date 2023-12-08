@@ -54,21 +54,11 @@ func (c *WsClient) writeMessages() {
 		c.manager.removeClient(c)
 	}()
 
-	for {
-		select {
-		case message, ok := <-c.egress:
-			if !ok {
-				if err := c.connection.WriteMessage(websocket.CloseMessage, nil); err != nil {
-					log.Println("connection closed: ", err)
-				}
-				return
-			}
-			sendMessage := fmt.Sprintf("%s : %s", c.user, message)
-			if err := c.connection.WriteMessage(websocket.TextMessage, []byte(sendMessage)); err != nil {
-				log.Println(err)
-			}
-			log.Println("sent message")
+	for message := range c.egress {
+		sendMessage := fmt.Sprintf("%s : %s", c.user, message)
+		if err := c.connection.WriteMessage(websocket.TextMessage, []byte(sendMessage)); err != nil {
+			log.Println(err)
 		}
-
+		log.Println("sent message")
 	}
 }

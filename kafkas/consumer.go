@@ -10,7 +10,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func Consume(ctx context.Context, topic, group string) {
+func Consume(ctx context.Context, topic, group string, handler func([]byte)) {
 	// create a new logger that outputs to stdout
 	// and has the `kafka reader` prefix
 	l := log.New(os.Stdout, "kafka reader: ", 0)
@@ -33,5 +33,6 @@ func Consume(ctx context.Context, topic, group string) {
 		}
 		// after receiving the message, log its value
 		fmt.Println("received: ", string(msg.Value))
+		handler(msg.Value)
 	}
 }
