@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"v2/controllers"
+	gRedis "v2/external-service/redis"
 	"v2/initializers"
 	"v2/middleware"
 	"v2/services"
@@ -18,6 +19,7 @@ var (
 	authController controllers.AuthController
 	authService    services.AuthService
 	wsServer       *wss.WsServer
+	redisClient    *gRedis.RedisClient
 )
 
 func init() {
@@ -27,13 +29,16 @@ func init() {
 	authController = controllers.NewAuthController(authService)
 
 	server = gin.Default()
-	wsServer = wss.NewWebsocketServer()
+	redisClient = gRedis.NewRedisClient(initializers.GetConfig().RedisHost)
+	wsServer = wss.NewWebsocketServer(redisClient)
 }
 
 func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"http://localhost:8000", initializers.GetConfig().ClientOrigin}
 	corsConfig.AllowCredentials = true
+
+	setupRedisTopic()
 
 	server.Use(cors.New(corsConfig))
 
@@ -47,4 +52,10 @@ func main() {
 
 	authController.AuthController(router)
 	log.Fatal(server.Run(":" + initializers.GetConfig().ServerPort))
+}
+
+func setupRedisTopic() {
+	go redisClient.Subscribe("Notification", func(b []byte) {
+		wsServer.Broadcast <- b
+	})
 }

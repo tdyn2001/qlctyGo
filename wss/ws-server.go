@@ -1,10 +1,9 @@
 package wss
 
 import (
-	"context"
 	"log"
 	"sync"
-	"v2/kafkas"
+	gRedis "v2/external-service/redis"
 	"v2/models"
 
 	"github.com/gin-gonic/gin"
@@ -26,17 +25,19 @@ type ClientList map[*WsClient]bool
 // Manager is used to hold references to all Clients Registered, and Broadcasting etc
 type WsServer struct {
 	sync.RWMutex
-	clients   ClientList
-	broadcast chan []byte
+	clients     ClientList
+	Broadcast   chan []byte
+	redisClient *gRedis.RedisClient
 }
 
 // NewManager is used to initalize all the values inside the manager
-func NewWebsocketServer() *WsServer {
+func NewWebsocketServer(redisClient *gRedis.RedisClient) *WsServer {
 	wsServer := &WsServer{
 		clients:   make(ClientList),
-		broadcast: make(chan []byte),
+		Broadcast: make(chan []byte),
 	}
-	initKafka(wsServer)
+	wsServer.redisClient = redisClient
+	// initKafka(wsServer)
 	go wsServer.broadcasting()
 	return wsServer
 }
@@ -64,7 +65,7 @@ func (m *WsServer) removeClient(client *WsClient) {
 }
 
 func (m *WsServer) broadcasting() {
-	for message := range m.broadcast {
+	for message := range m.Broadcast {
 		for wsClient := range m.clients {
 			wsClient.egress <- message
 		}
@@ -87,9 +88,8 @@ func (ws *WsServer) SetupWSS(ctx *gin.Context) {
 	go wsClient.writeMessages()
 }
 
-func initKafka(ws *WsServer) {
-	go kafkas.Consume(context.Background(), "test-topic-2", "test-group", func(msg []byte) {
-		ws.broadcast <- msg
-	})
-	go kafkas.Produce(context.Background(), "test-topic-2")
-}
+// func initKafka(ws *WsServer) {
+// 	go kafkas.Consume(context.Background(), "notification", "general", func(msg []byte) {
+// 		ws.broadcast <- msg
+// 	})
+// }

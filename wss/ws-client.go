@@ -41,11 +41,13 @@ func (c *WsClient) readMessages() {
 		log.Println("user: ", c.user)
 		log.Println("Payload: ", string(payload))
 
-		for wsClient := range c.manager.clients {
-			if wsClient != c {
-				wsClient.egress <- payload
-			}
-		}
+		c.manager.redisClient.Publish("Notification", payload)
+
+		// for wsClient := range c.manager.clients {
+		// 	if wsClient != c {
+		// 		wsClient.egress <- payload
+		// 	}
+		// }
 	}
 }
 

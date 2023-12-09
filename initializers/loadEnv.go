@@ -25,6 +25,8 @@ type Config struct {
 	KafkaBroker1 string `mapstructure:"KAFKA_PRODUCER_BROKER_1"`
 	KafkaBroker2 string `mapstructure:"KAFKA_PRODUCER_BROKER_2"`
 	KafkaBroker3 string `mapstructure:"KAFKA_PRODUCER_BROKER_3"`
+
+	RedisHost string `mapstructure:"REDIS_HOST"`
 }
 
 var lock = &sync.Mutex{}
